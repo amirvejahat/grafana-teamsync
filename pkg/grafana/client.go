@@ -72,11 +72,11 @@ func (c *Client) request(method, requestPath string, body io.Reader, responseStr
 	ctx, cancel := context.WithTimeout(context.Background(), c.timeout)
 	defer cancel()
 
-	fmt.Println(req)
+	//fmt.Println(req)
 
 	resp, err = c.httpClient.Do(req.WithContext(ctx))
 	if err != nil || !(resp.StatusCode > 199 && resp.StatusCode < 300) {
-		fmt.Println("error happend", err, resp.Status)
+		//fmt.Println("error happend", err, resp.Status)
 		return err
 
 		// TODO: handle non-200 status codes

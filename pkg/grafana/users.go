@@ -66,3 +66,5 @@ func (c *Client) AddUser(loginOrEmail, role string) error {
 	return nil
 
 }
+
+func (c *Client) GetUserID(userID int64, err error) {}

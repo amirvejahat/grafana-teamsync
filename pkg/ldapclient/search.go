@@ -1,4 +1,4 @@
-package gldap
+package ldapclient
 
 import (
 	"crypto/tls"
@@ -18,8 +18,6 @@ type LDAPClient struct {
 	Conn               *ldap.Conn
 	ClientCertificates []tls.Certificate
 	LdapPassword       string
-	loginUsername      string
-	loginPassword      string
 }
 
 type LDAPUser struct {
@@ -33,6 +31,7 @@ type LDAPUser struct {
 type LDAPGroup struct {
 	DN        string
 	GroupName string
+	MemberUid []string
 }
 
 func (lc *LDAPClient) CreateLdapConnection() error {
@@ -64,7 +63,7 @@ func (lc *LDAPClient) CreateLdapConnection() error {
 	return nil
 }
 
-func (lc *LDAPClient) bindAndSearch(filter string) (*ldap.SearchResult, error) {
+func (lc *LDAPClient) bindAndSearch(filter string, attributes []string) (*ldap.SearchResult, error) {
 	lc.Conn.Bind(lc.BindDN, lc.LdapPassword)
 	searchReq := ldap.NewSearchRequest(
 		lc.BaseDN,
@@ -74,7 +73,7 @@ func (lc *LDAPClient) bindAndSearch(filter string) (*ldap.SearchResult, error) {
 		0,
 		false,
 		filter,
-		[]string{"dn", "cn", "givenName", "sn", "mail"},
+		attributes,
 		nil,
 	)
 	result, err := lc.Conn.Search(searchReq)
@@ -91,8 +90,9 @@ func (lc *LDAPClient) bindAndSearch(filter string) (*ldap.SearchResult, error) {
 func (lc *LDAPClient) ListLDAPUsers() ([]LDAPUser, error) {
 
 	ldapFilter := "(objectClass=posixAccount)"
+	attributes := []string{"dn", "cn", "givenName", "sn", "mail"}
 	var ldapEntries *ldap.SearchResult
-	ldapEntries, err := lc.bindAndSearch(ldapFilter)
+	ldapEntries, err := lc.bindAndSearch(ldapFilter, attributes)
 	if err != nil {
 		return nil, err
 	}
@@ -111,8 +111,9 @@ func (lc *LDAPClient) ListLDAPUsers() ([]LDAPUser, error) {
 
 func (lc *LDAPClient) ListLDAPGroups() ([]LDAPGroup, error) {
 	ldapFilter := "(objectClass=posixGroup)"
+	attributes := []string{"dn", "cn", "memberUid"}
 	var ldapEntries *ldap.SearchResult
-	ldapEntries, err := lc.bindAndSearch(ldapFilter)
+	ldapEntries, err := lc.bindAndSearch(ldapFilter, attributes)
 	if err != nil {
 		return nil, err
 	}
@@ -121,6 +122,7 @@ func (lc *LDAPClient) ListLDAPGroups() ([]LDAPGroup, error) {
 		ldapGroups = append(ldapGroups, LDAPGroup{
 			DN:        ldapEntries.Entries[i].DN,
 			GroupName: ldapEntries.Entries[i].GetAttributeValue("cn"),
+			MemberUid: ldapEntries.Entries[i].GetAttributeValues("memberUid"),
 		})
 	}
 	return ldapGroups, nil

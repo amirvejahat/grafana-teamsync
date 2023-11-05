@@ -8,6 +8,7 @@ import (
 )
 
 type Team struct {
+	ID    int64  `json:"id,emitempty"`
 	Name  string `json:"name,emitempty"`
 	Email string `json:"email,emitempty"`
 	OrgId int64  `json:"orgId,emitempty"`
@@ -24,7 +25,7 @@ func (c *Client) GetTeamMembers(teamID string) {
 
 }
 
-func (c *Client) AddTeam(name, email string, orgId int64) error {
+func (c *Client) AddTeam(name, email string, orgId int64) (*Team, error) {
 	team := Team{
 		Name:  name,
 		Email: email,
@@ -33,15 +34,15 @@ func (c *Client) AddTeam(name, email string, orgId int64) error {
 	payload, err := json.Marshal(team)
 	if err != nil {
 		fmt.Println(err)
-		return err
+		return nil, err
 	}
 	err = c.request(http.MethodPost, "/api/teams", bytes.NewBuffer(payload), &team)
 	if err != nil {
 		fmt.Println(err)
-		return err
+		return nil, err
 	}
 
-	return nil
+	return &team, nil
 
 }
 
