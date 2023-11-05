@@ -4,10 +4,9 @@ Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"log"
 	"os"
 
-	"github.com/amirvejahat/grafana-teamsync/pkg/grafana"
+	"github.com/amirvejahat/grafana-teamsync/pkg/gldap"
 	"github.com/spf13/cobra"
 )
 
@@ -36,14 +35,35 @@ var rootCmd = &cobra.Command{
 		// 	cmd.Help()
 		// 	os.Exit(0)
 		// }
-		gclient, err := grafana.NewClient(grafanaUrl, grafanaToken, 30, 0, nil)
-		if err != nil {
-			log.Fatal(err)
-		}
-		gclient.GetAllUsers()
-		gclient.AddTeam("myteam", "xxx@gmail.com", 1)
+		// gclient, err := grafana.NewClient(grafanaUrl, grafanaToken, 30, 0, nil)
+		// if err != nil {
+		// 	log.Fatal(err)
+		// }
+		// gclient.GetAllUsers()
+		// gclient.AddTeam("myteam", "xxx@gmail.com", 1)
 		//gclient.GetAllFolders()
 		//gclient.CreateFolder("mynewFolder")
+
+		//list of users and groups from ldap
+		// create users based on ldap accounts
+		// create teams based on ldap groups
+		// create folders based on ldap groups
+
+		// checking ldap connections
+		myLdapClient := &gldap.LdapClient{
+			LdapServer:         "localhost:389",
+			BindDN:             "cn=admin,dc=xl,dc=com",
+			BaseDN:             "dc=xl,dc=com",
+			FilterDN:           "(objectClass=posixAccount)",
+			ServerName:         "myServerName",
+			LdapPassword:       "password",
+			InsecureSkipVerify: true,
+			UseSSL:             false,
+			SkipTLS:            true,
+			Conn:               nil,
+		}
+		myLdapClient.CreateLdapConnection()
+		myLdapClient.BindAndSearch()
 	},
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
