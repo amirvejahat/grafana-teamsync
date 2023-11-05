@@ -4,6 +4,7 @@ Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/amirvejahat/grafana-teamsync/pkg/gldap"
@@ -50,11 +51,10 @@ var rootCmd = &cobra.Command{
 		// create folders based on ldap groups
 
 		// checking ldap connections
-		myLdapClient := &gldap.LdapClient{
+		myLdapClient := &gldap.LDAPClient{
 			LdapServer:         "localhost:389",
 			BindDN:             "cn=admin,dc=xl,dc=com",
 			BaseDN:             "dc=xl,dc=com",
-			FilterDN:           "(objectClass=posixAccount)",
 			ServerName:         "myServerName",
 			LdapPassword:       "password",
 			InsecureSkipVerify: true,
@@ -63,7 +63,12 @@ var rootCmd = &cobra.Command{
 			Conn:               nil,
 		}
 		myLdapClient.CreateLdapConnection()
-		myLdapClient.BindAndSearch()
+		result, err := myLdapClient.ListLDAPUsers()
+		if err != nil {
+			fmt.Println("error happening!", err)
+		}
+		fmt.Println(result)
+
 	},
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
